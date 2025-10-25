@@ -18,8 +18,10 @@ app.get('/', (req,res) => {
 })
 
 //import Routes
+import userRoutes from './routes/user.route.js'
 
 // Routes declaration
+app.use('/api/v1/users', userRoutes)
 
 
 export {app}

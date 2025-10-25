@@ -1,8 +1,8 @@
-import {User} from '../models/user.model.js';
+import {User} from '../models/User.model.js';
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 
-// password validation function
+// password validation function (do this on frontend instead)
 // min length 8, at least one uppercase, one lowercase, one digit, one special character
 /* const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
 
@@ -11,7 +11,7 @@ const isPasswordValid = (password) => {
 } */
 
 //signup controller
-export const signup = async (req, res) => {
+export const signupUser = async (req, res) => {
     const {username, email, password} = req.body;
 
     try {
@@ -54,5 +54,40 @@ export const signup = async (req, res) => {
         });
     } catch (error) {
         res.status(500).json({message: 'Something went wrong while creating user', error: error.message});
+    }
+}
+
+// upload avatar controller
+export const uploadAvatar = async (req, res) => {
+    const localFilePath = req.file.path;
+        if(!localFilePath){
+            return res.status(400).json({message: 'No file uploaded'});
+        }
+    try {
+        const userId = req.user._id;
+        //upload to cloudinary
+        const result = await cloudinary.uploader.upload(localFilePath, {
+            resource_type: "auto"
+        });
+
+        console.log(result)
+        console.log("Avatar uploaded successfully");
+
+        // delete local file after upload
+        fs.unlinkSync(localFilePath);
+
+        // update user profile with avatar URL
+        const updatedUser = await User.findByIdAndUpdate(userId, {
+            avatar: result.secure_url
+        }, {new: true}).select('-password');
+
+        res.status(200).json({
+            success: true,
+            message: 'Avatar uploaded successfully',
+            user: updatedUser
+        })
+    } catch (error) {
+        fs.unlinkSync(localFilePath);
+        res.status(500).json({message: 'Something went wrong while uploading avatar', error: error.message});
     }
 }

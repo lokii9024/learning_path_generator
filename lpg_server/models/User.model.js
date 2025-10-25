@@ -15,6 +15,10 @@ const userSchema = new mongoose.Schema({
         type: String,
         required: true,
     },
+    avatarUrl: {
+        type: String,
+        default: ""
+    },
     learningPaths: [
         {
             type: mongoose.Schema.Types.ObjectId,
