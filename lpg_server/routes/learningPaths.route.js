@@ -10,15 +10,15 @@ const router = express.Router();
 router.post('/generate', verifyJWT, createLearningPath)
 
 // to get all learning paths for logged in user
-router.get('/', )
+router.get('/', verifyJWT, )
 
 // to get a specific learning path by ID
-router.get('/:id', )
+router.get('/:id', verifyJWT, )
 
 // to mark a module as completed
-router.patch('/:pathId/modules/:moduleId/complete', )
+router.patch('/:pathId/modules/:moduleId/complete', verifyJWT, )
 
 // to delete a learning path
-router.delete('/:id', )
+router.delete('/:id', verifyJWT, )
 
 export default router;

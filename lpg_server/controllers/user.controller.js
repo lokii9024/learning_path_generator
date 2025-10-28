@@ -3,7 +3,6 @@ import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import cloudinary from "../config/cloudinary.config.js";
 import fs from "fs";
-import { use } from "react";
 
 const cookieOptions = {
   httpOnly: true,

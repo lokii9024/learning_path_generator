@@ -1,4 +1,4 @@
-import LearningPath from "../models/LearningPath.model";
+import LearningPath from "../models/LearningPath.model.js";
 import openaiClient from "../config/openaiClient.js";
 
 // Create a new learning path
@@ -83,3 +83,42 @@ Focus on keeping the plan achievable within ${dailyCommitment} hours per day.
     res.status(500).json({message: "Error creating learning path", error: error.message});
   }
 };
+
+// Get all learning paths for a user
+export const getLearningPaths = async (req, res) => {
+  const userId = req.user._id;
+  if(!userId){
+    return res.status(400).json({message: "User ID not found in request"});
+  }
+  try {
+    const LearningPaths = await LearningPath.find({userId}).select("-modules -dailyTimeCommitment");
+
+    res
+      .status(200)
+      .json({ message: "Learning paths fetched successfully", learningPaths });
+  } catch (error) {
+    res.status(500).json({ message: "Error fetching learning paths", error: error.message });
+  }
+}
+
+// Get a specific learning path by ID
+export const getLearningPathById = async (req, res) => {
+  const {id} = req.params;
+  const userId = req.user._id;
+
+  try {
+    
+  } catch (error) {
+    
+  }
+}
+
+// Mark a module as completed
+export const markModuleAsCompleted = async (req, res) => {
+  // Implementation here
+}
+
+// Delete a learning path
+export const deleteLearningPath = async (req, res) => {
+  // Implementation here
+}
