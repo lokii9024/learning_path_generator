@@ -3,6 +3,7 @@ import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import cloudinary from "../config/cloudinary.config.js";
 import fs from "fs";
+import { use } from "react";
 
 const cookieOptions = {
   httpOnly: true,
@@ -17,6 +18,12 @@ const cookieOptions = {
 
 const isPasswordValid = (password) => {
     return passwordRegex.test(password);
+} */
+
+// email validation function (do this on frontend instead)
+/* const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/; */
+/* const isEmailValid = (email) => {
+    return emailRegex.test(email);
 } */
 
 //signup controller
@@ -130,6 +137,7 @@ export const loginUser = async (req, res) => {
     res.cookie("token", token, cookieOptions).status(200).json({
       message: "Login successful",
       token,
+      user: user.select("-password"),
     });
   } catch (error) {
     res

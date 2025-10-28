@@ -2,6 +2,7 @@ import mongoose from "mongoose";
 
 const resourceSchema = new mongoose.Schema({
     title: String,
+    type: String, // e.g., "video", "article", "book", "repository"
     url: String,
     platform: String // e.g., "YouTube", "Coursera", "Udemy"
 })
@@ -17,14 +18,14 @@ const moduleSchema = new mongoose.Schema({
     },
     duration: String, // e.g., "2 weeks", "1 month"
     resources: [resourceSchema],
-    completed: {
+    isCompleted: {
         type: Boolean,
         default: false
     }
 })
 
 const learningPathSchema = new mongoose.Schema({
-    user: {
+    userId: {
         type: mongoose.Schema.Types.ObjectId,
         ref: "User",
         required: true
@@ -34,14 +35,23 @@ const learningPathSchema = new mongoose.Schema({
         required: true
     },
     modules: [moduleSchema],
+    completedModules: {
+        type: Number,
+        default: 0
+    },
+    totalModules: {
+        type: Number,
+        default: 0
+    },
     skillLevel: {
         type: String,
         enum: ["Beginner", "Intermediate", "Advanced"],
         default: "Beginner",
         required: true
     },
-    weeklyTimeCommitment: {
-        type: Number,
+    duration: String, //e.g., "3 months"
+    dailyTimeCommitment: {
+        type: Number, //hrs per day
         default: 5,
         required: true
     },

@@ -1,0 +1,12 @@
+PORT = local port 
+MONGO_URI = "your MONGO_URI"
+CORS_ORIGIN = "your CORS_ORIGIN"
+JWT_SECRET = 
+
+# Cloudinary Credentials
+CLOUDINARY_CLOUD_NAME = 
+CLOUDINARY_API_KEY = 
+CLOUDINARY_API_SECRET = 
+
+# groq api key for generating learning paths
+GROQ_API_KEY = 

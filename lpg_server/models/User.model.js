@@ -19,12 +19,6 @@ const userSchema = new mongoose.Schema({
         type: String,
         default: ""
     },
-    learningPaths: [
-        {
-            type: mongoose.Schema.Types.ObjectId,
-            ref: "LearningPath"
-        }
-    ]
 },{
     timestamps: true
 })
