@@ -10,6 +10,9 @@ export const createLearningPath = async (req, res) => {
   }
 
   const userId = req.user._id;
+  if(!userId){
+    return res.status(400).json({message: "User ID not found in request"});
+  }
   const prompt = `
 You are a highly intelligent AI learning path generator.
 
@@ -105,20 +108,85 @@ export const getLearningPaths = async (req, res) => {
 export const getLearningPathById = async (req, res) => {
   const {id} = req.params;
   const userId = req.user._id;
-
+  if(!id){
+    return res.status(400).json({message: "Learning path ID is required"});
+  }
+  if(!userId){
+    return res.status(400).json({message: "User ID not found in request"});
+  }
   try {
-    
+    const lpg = await LearningPath.findById({_id:id, userId});
+    if(!lpg){
+      return res.status(404).json({message: "Learning path not found"});
+    }
+
+    res.status(200).json({message: "Learning path fetched successfully", learningPath: lpg}); 
   } catch (error) {
-    
+    res.status(500).json({message: "Error fetching learning path", error: error.message});
   }
 }
 
 // Mark a module as completed
-export const markModuleAsCompleted = async (req, res) => {
-  // Implementation here
+export const markORunmarkModule = async (req, res) => {
+  const {pathId, moduleId} = req.params;
+  const userId = req.user._id;
+
+  if(!userId){
+    return res.status(400).json({message: "User ID not found in request"});
+  }
+
+  if(!pathId || !moduleId){
+    return res.status(400).json({message: "Learning path ID and Module ID are required"});
+  }
+
+  try {
+    const learningPath = await LearningPath.findOne({_id: pathId, userId});
+    if(!learningPath){
+      return res.status(404).json({message: "Learning path not found"});
+    }
+
+    const module = learningPath.modules.id(moduleId);
+    if(!module){
+      return res.status(404).json({message: "Module not found"});
+    }
+
+    const newStatus = !module.isCompleted;
+    module.isCompleted = newStatus;
+    learningPath.completedModules = learningPath.modules.filter(mod => mod.isCompleted).length;
+
+    await learningPath.save();
+
+    const progress = Math.round((completedModules / learningPath.modules.length) * 100);
+
+    res.status(200).json({
+      success: true,
+      message: newStatus ? "Module marked as completed" : "Module marked as incomplete",
+      module: {
+        _id: moduleId,
+        isCompleted: newStatus
+      },
+      progress
+    });
+  } catch (error) {
+    res.status(500).json({message: "Error updating module status", error: error.message});
+  }
+  
 }
 
 // Delete a learning path
 export const deleteLearningPath = async (req, res) => {
-  // Implementation here
+  const {id} = req.params;
+  const userId = req.user._id;
+
+  try {
+    const doesLpgExist = await LearningPath.findOne({_id:id, userId});
+    if(!doesLpgExist){
+      return res.status(404).json({message: "Learning path not found"});
+    }
+    const deletedLpg = await LearningPath.findByIdAndDelete({_id:id, userId});
+
+    res.status(200).json({message: "Learning path deleted successfully", learningPath: deletedLpg});
+  } catch (error) {
+    res.status(500).json({message: "Error deleting learning path", error: error.message});
+  }
 }

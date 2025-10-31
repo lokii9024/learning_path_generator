@@ -1,6 +1,6 @@
 import express from 'express';
 import { verifyJWT } from '../middlewares/auth.middleware.js';
-import { createLearningPath } from '../controllers/learningPath.controller.js';
+import { createLearningPath, getLearningPaths, getLearningPathById, deleteLearningPath,markORunmarkModule } from '../controllers/learningPath.controller.js';
 
 const router = express.Router();
 
@@ -10,15 +10,15 @@ const router = express.Router();
 router.post('/generate', verifyJWT, createLearningPath)
 
 // to get all learning paths for logged in user
-router.get('/', verifyJWT, )
+router.get('/', verifyJWT, getLearningPaths)
 
 // to get a specific learning path by ID
-router.get('/:id', verifyJWT, )
+router.get('/:id', verifyJWT, getLearningPathById)
 
-// to mark a module as completed
-router.patch('/:pathId/modules/:moduleId/complete', verifyJWT, )
+// to mark a module as completed or incompleted
+router.patch('/:pathId/modules/:moduleId/complete', verifyJWT, markORunmarkModule)
 
 // to delete a learning path
-router.delete('/:id', verifyJWT, )
+router.delete('/:id', verifyJWT, deleteLearningPath)
 
 export default router;
