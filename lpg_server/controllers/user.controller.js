@@ -112,6 +112,35 @@ export const uploadAvatar = async (req, res) => {
   }
 };
 
+// remove avatar controller
+export const removeAvatar = async (req, res) => {
+  const userId = req.user._id;
+  if(!userId){
+    return res.status(400).json({message: "User ID not found in request"});
+  }
+  try {
+    const user = await User.findById(userId);
+    if(!user){
+      return res.status(404).json({message: "User not found"});
+    }
+
+    // delete avatar from cloudinary
+    const avatarUrl = user.avatarUrl;
+    if(!avatarUrl){
+      return res.status(400).json({message: "No avatar to delete"});
+    }
+    const publicId = avatarUrl.split("/").pop().split(".")[0];
+    await cloudinary.uploader.destroy(publicId);
+    user.avatarUrl = "";
+
+    await user.save();
+
+    res.status(200).json({message: "Avatar removed successfully", userId});
+  } catch (error) {
+    res.status(500).json({message: "Error removing avatar", error: error.message});
+  }
+}
+
 // TODO: edit avatar controller
 
 // login controller
