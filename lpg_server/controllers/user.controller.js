@@ -1,8 +1,9 @@
-import { User } from "../models/User.model.js";
+import  {User} from "../models/User.model.js";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
-import cloudinary from "../config/cloudinary.config.js";
+import cloudinary from "../config/cloudinary.js";
 import fs from "fs";
+import {sendEmail} from "../config/nodemailer.js";
 
 const cookieOptions = {
   httpOnly: true,
@@ -30,6 +31,8 @@ export const signupUser = async (req, res) => {
   const { username, email, password } = req.body;
 
   try {
+    // TODO: validate email and password format here
+    
     const userWithEmail = await User.findOne({ email });
     if (userWithEmail) {
       return res
@@ -49,6 +52,9 @@ export const signupUser = async (req, res) => {
     });
 
     const savedUser = await newUser.save().select("-password");
+
+    //TODO: send welcome email
+
     const token = jwt.sign({ id: savedUser._id }, process.env.JWT_SECRET, {
       expiresIn: "1d",
     });

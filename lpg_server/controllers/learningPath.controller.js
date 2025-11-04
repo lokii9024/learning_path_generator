@@ -1,4 +1,4 @@
-import LearningPath from "../models/LearningPath.model.js";
+import {LearningPath }from "../models/LearningPath.model.js";
 import openaiClient from "../config/openaiClient.js";
 
 // Create a new learning path

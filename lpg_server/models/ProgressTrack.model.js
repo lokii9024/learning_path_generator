@@ -27,5 +27,4 @@ const progressTrackSchema = new mongoose.Schema({
     timestamps:true
 })
 
-const ProgressTrack = mongoose.model("ProgressTrack", progressTrackSchema);
-export default ProgressTrack;
+export const ProgressTrack = mongoose.model("ProgressTrack", progressTrackSchema);

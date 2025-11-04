@@ -63,5 +63,4 @@ const learningPathSchema = new mongoose.Schema({
     timestamps:true
 });
 
-const LearningPath = mongoose.model("LearningPath", learningPathSchema);
-export default LearningPath;
+export const LearningPath = mongoose.model("LearningPath", learningPathSchema);
