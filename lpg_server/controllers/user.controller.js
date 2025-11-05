@@ -1,7 +1,7 @@
 import  {User} from "../models/User.model.js";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
-import cloudinary from "../config/cloudinary.js";
+import cloudinary from "../config/cloudinary.js"
 import fs from "fs";
 import {sendEmail} from "../config/nodemailer.js";
 
@@ -45,13 +45,18 @@ export const signupUser = async (req, res) => {
       return res.status(400).json({ message: "Username is already taken" });
     }
     const hashedPassword = await bcrypt.hash(password, 10);
+    if(!hashedPassword){
+      return res.status(500).json({message: "Error hashing password"});
+    }
     const newUser = new User({
       username,
       email,
       password: hashedPassword,
     });
 
-    const savedUser = await newUser.save().select("-password");
+    await newUser.save();
+
+    const savedUser = await User.findOne({ email }).select("-password");
 
     //TODO: send welcome email
 
@@ -75,17 +80,27 @@ export const signupUser = async (req, res) => {
 };
 
 // upload avatar controller
-export const uploadAvatar = async (req, res) => {
-  const localFilePath = req.file.path;
+export const updateAvatar = async (req, res) => {
+  console.log("Update avatar request received");
+  const localFilePath = req.file?.path;
   if (!localFilePath) {
     return res.status(400).json({ message: "No file uploaded" });
   }
+
+  console.log("Local file path:", localFilePath);
+  // upload to cloudinary
+  let result;
+
   try {
     const userId = req.user._id;
     //upload to cloudinary
-    const result = await cloudinary.uploader.upload(localFilePath, {
-      resource_type: "auto",
+    result = await cloudinary.uploader.upload(localFilePath, {
+      resource_type: "auto"
     });
+
+    // if (!result || !result.secure_url) {
+    //   return res.status(500).json({ message: "Error uploading avatar to cloudinary" });
+    // }
 
     console.log(result);
     console.log("Avatar uploaded successfully");
@@ -93,14 +108,28 @@ export const uploadAvatar = async (req, res) => {
     // delete local file after upload
     fs.unlinkSync(localFilePath);
 
+    // find user by ID
+    const user = await User.findById(userId);
+    const avatarUrl = user.avatarUrl;
+
     // update user profile with avatar URL
     const updatedUser = await User.findByIdAndUpdate(
       userId,
       {
-        avatar: result.secure_url,
+        avatarUrl: result?.secure_url,
       },
       { new: true }
     ).select("-password");
+
+    if (!updatedUser) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    // delete old avatar from cloudinary if exists
+    if (avatarUrl) {
+      const publicId = avatarUrl.split("/").pop().split(".")[0];
+      await cloudinary.uploader.destroy(publicId);
+    }
 
     res.status(200).json({
       success: true,
@@ -108,6 +137,10 @@ export const uploadAvatar = async (req, res) => {
       user: updatedUser,
     });
   } catch (error) {
+    // delete local file in case of error
+    if (result?.public_id) {
+      await cloudinary.uploader.destroy(result.public_id);
+    }
     fs.unlinkSync(localFilePath);
     res
       .status(500)
@@ -151,27 +184,34 @@ export const removeAvatar = async (req, res) => {
 
 // login controller
 export const loginUser = async (req, res) => {
+  console.log("Login request received");
   const { email, password } = req.body;
-
+  console.log("Email:", email);
+  console.log("Password:", password);
   try {
-    const user = await User.find({ email });
+    const user = await User.findOne({ email });
     if (!user) {
       return res.status(400).json({ message: "No user found with this email" });
     }
-
-    const isPasswordValid = await bcrypt.compare(password, user.password);
+    console.log("User found:",user);
+    const hashedPassword = user.password;
+    if(!hashedPassword){
+      return res.status(500).json({message: "Error retrieving user password"});
+    }
+    const isPasswordValid = await bcrypt.compare(password, hashedPassword);
     if (!isPasswordValid) {
       return res.status(400).json({ message: "Invalid password" });
     }
-
+    console.log("Password is valid");
     const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, {
       expiresIn: "1d",
     });
-
+    const userData = await User.findOne({ email }).select("-password");
+    console.log("JWT token generated");
     res.cookie("token", token, cookieOptions).status(200).json({
       message: "Login successful",
       token,
-      user: user.select("-password"),
+      user: userData,
     });
   } catch (error) {
     res

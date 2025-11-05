@@ -10,6 +10,7 @@ app.use(cors({
 
 app.use(express.json())
 app.use(express.urlencoded({extended: true, limit: "16kb"}))
+app.use(express.static('uploads')) // serve static files from uploads directory
 app.use(cookieParser())
 
 //home
