@@ -49,10 +49,12 @@ const learningPathSchema = new mongoose.Schema({
         default: "Beginner",
         required: true
     },
-    duration: String, //e.g., "3 months"
+    duration: {
+        type: String,
+        required: true
+    }, //e.g., "3 months"
     dailyTimeCommitment: {
-        type: Number, //hrs per day
-        default: 5,
+        type: String, //hrs per day
         required: true
     },
     createdAt:{

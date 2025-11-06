@@ -17,7 +17,7 @@ export const createLearningPath = async (req, res) => {
 You are a highly intelligent AI learning path generator.
 
 Your task is to create a **structured, step-by-step learning plan** for the goal: "${goal}".
-The learner’s level is: ${level}.
+The learner’s level is: ${skillLevel}.
 The total timeline is: ${duration}.
 The learner can commit approximately **${dailyCommitment} hours per day**.
 
@@ -47,7 +47,7 @@ The learner can commit approximately **${dailyCommitment} hours per day**.
   ]
 }
 
-Be clear, motivating, and suitable for a ${level} learner.
+Be clear, motivating, and suitable for a ${skillLevel} learner.
 Avoid jargon unless explained with examples.
 Focus on keeping the plan achievable within ${dailyCommitment} hours per day.
 `;
@@ -98,7 +98,7 @@ export const getLearningPaths = async (req, res) => {
 
     res
       .status(200)
-      .json({ message: "Learning paths fetched successfully", learningPaths });
+      .json({ message: "Learning paths fetched successfully", LearningPaths });
   } catch (error) {
     res.status(500).json({ message: "Error fetching learning paths", error: error.message });
   }
@@ -115,7 +115,7 @@ export const getLearningPathById = async (req, res) => {
     return res.status(400).json({message: "User ID not found in request"});
   }
   try {
-    const lpg = await LearningPath.findById({_id:id, userId});
+    const lpg = await LearningPath.findById(id);
     if(!lpg){
       return res.status(404).json({message: "Learning path not found"});
     }
@@ -140,7 +140,7 @@ export const markORunmarkModule = async (req, res) => {
   }
 
   try {
-    const learningPath = await LearningPath.findOne({_id: pathId, userId});
+    const learningPath = await LearningPath.findById(pathId);
     if(!learningPath){
       return res.status(404).json({message: "Learning path not found"});
     }
@@ -154,16 +154,22 @@ export const markORunmarkModule = async (req, res) => {
     module.isCompleted = newStatus;
     learningPath.completedModules = learningPath.modules.filter(mod => mod.isCompleted).length;
 
-    await learningPath.save();
+    const savedLpg = await learningPath.save();
 
-    const progress = Math.round((completedModules / learningPath.modules.length) * 100);
+    if(!savedLpg){
+      return res.status(500).json({message: "Failed to update module status"});
+    }
+
+    const progress = Math.round((savedLpg.completedModules / savedLpg.modules.length) * 100);
+
+    const savedStatus = savedLpg.modules.id(moduleId).isCompleted;  
 
     res.status(200).json({
       success: true,
       message: newStatus ? "Module marked as completed" : "Module marked as incomplete",
       module: {
         _id: moduleId,
-        isCompleted: newStatus
+        isCompleted: savedStatus
       },
       progress
     });
@@ -179,11 +185,11 @@ export const deleteLearningPath = async (req, res) => {
   const userId = req.user._id;
 
   try {
-    const doesLpgExist = await LearningPath.findOne({_id:id, userId});
+    const doesLpgExist = await LearningPath.findById(id);
     if(!doesLpgExist){
       return res.status(404).json({message: "Learning path not found"});
     }
-    const deletedLpg = await LearningPath.findByIdAndDelete({_id:id, userId});
+    const deletedLpg = await LearningPath.findOneAndDelete({_id: id, userId});
 
     res.status(200).json({message: "Learning path deleted successfully", learningPath: deletedLpg});
   } catch (error) {
