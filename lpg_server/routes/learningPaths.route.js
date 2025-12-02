@@ -1,6 +1,6 @@
 import express from 'express';
 import { verifyJWT } from '../middlewares/auth.middleware.js';
-import { createLearningPath, getLearningPaths, getLearningPathById, deleteLearningPath,markORunmarkModule, fetchYtVideosForModule, fetchRepositoriesForModule } from '../controllers/learningPath.controller.js';
+import { createLearningPath, getLearningPaths, getLearningPathById, deleteLearningPath,markORunmarkModule, fetchYtVideosForModule, fetchRepositoriesForModule, getModulesOfLearningPath } from '../controllers/learningPath.controller.js';
 
 const router = express.Router();
 
@@ -14,6 +14,9 @@ router.get('/', verifyJWT, getLearningPaths)
 
 // to get a specific learning path by ID
 router.get('/:id', verifyJWT, getLearningPathById)
+
+// to get all modules in a learning path
+router.get('/:pathId/modules', verifyJWT, getModulesOfLearningPath)
 
 // to mark a module as completed or incompleted
 router.patch('/:pathId/modules/:moduleId/complete', verifyJWT, markORunmarkModule)
