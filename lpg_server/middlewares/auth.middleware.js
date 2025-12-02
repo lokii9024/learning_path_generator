@@ -3,7 +3,7 @@ import {User} from '../models/User.model.js';
 
 export const verifyJWT = async (req, res, next) => {
     const token = req.cookies?.token || req.header['authorization']?.replace('Bearer ', '');
-
+    
     if(!token){
         console.log("No token provided");
         return res.status(401).json({message: 'Access Denied. No token provided.'});
@@ -11,6 +11,9 @@ export const verifyJWT = async (req, res, next) => {
 
     try {
         const decoded = jwt.verify(token, process.env.JWT_SECRET);
+        if(!decoded || !decoded.id){
+            return res.status(401).json({message: 'Invalid token.'});
+        }
         const user = await User.findById(decoded.id).select('-password');
         if(!user){
             return res.status(401).json({message: 'Invalid token. User not found.'});

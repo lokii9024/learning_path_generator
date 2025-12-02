@@ -67,7 +67,6 @@ export const signupUser = async (req, res) => {
     res.cookie("token", token, cookieOptions).status(201).json({
       message: "User registered successfully",
       user: savedUser,
-      token,
     });
   } catch (error) {
     res
@@ -210,7 +209,6 @@ export const loginUser = async (req, res) => {
     console.log("JWT token generated");
     res.cookie("token", token, cookieOptions).status(200).json({
       message: "Login successful",
-      token,
       user: userData,
     });
   } catch (error) {

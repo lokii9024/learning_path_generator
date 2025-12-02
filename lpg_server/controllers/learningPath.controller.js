@@ -1,5 +1,9 @@
 import {LearningPath }from "../models/LearningPath.model.js";
 import openaiClient from "../config/openaiClient.js";
+import axios from "axios";
+import dotenv from "dotenv";
+
+dotenv.config();
 
 // Create a new learning path
 export const createLearningPath = async (req, res) => {
@@ -126,6 +130,11 @@ export const getLearningPathById = async (req, res) => {
   }
 }
 
+// TODO: get modules of a learning path
+export const getModulesOfLearningPath = async (req, res) => {
+
+}
+
 // Mark a module as completed
 export const markORunmarkModule = async (req, res) => {
   const {pathId, moduleId} = req.params;
@@ -194,5 +203,97 @@ export const deleteLearningPath = async (req, res) => {
     res.status(200).json({message: "Learning path deleted successfully", learningPath: deletedLpg});
   } catch (error) {
     res.status(500).json({message: "Error deleting learning path", error: error.message});
+  }
+}
+
+// Fetch YouTube videos for a module
+export const fetchYtVideosForModule = async (req, res) => {
+  const {pathId,moduleId,moduleTitle} = req.params;
+  if(!moduleTitle){
+    return res.status(400).json({message: "Module title is required"});
+  }
+  try {
+    const response = await axios.get("https://www.googleapis.com/youtube/v3/search", {
+      params: {
+        part: "snippet",
+        q: moduleTitle,
+        type: "video",
+        maxResults: 3,
+        key: process.env.YT_API_KEY,
+        safeSearch: "strict",
+      }
+    });
+
+    if(!response.data || !response.data.items){
+      return res.status(500).json({message: "Invalid response from YouTube API"});
+    }
+
+    const videos = response?.data?.items?.map((vdo) => ({
+      title: vdo.snippet.title,
+      channel: vdo.snippet.channelTitle,
+      thumbnail: vdo.snippet.thumbnails?.medium?.url,
+      url: `https://www.youtube.com/watch?v=${vdo.id.videoId}`,
+      publishedAt: vdo.snippet.publishedAt,
+    }))
+
+    //insert this array into the module's videos field
+    const learningPath = await LearningPath.findById(pathId);
+    if(!learningPath) res.status(404).json({message: "Learning path not found"});
+
+    const module = learningPath.modules.id(moduleId);
+    if(!module) res.status(404).json({message: "Module not found"});
+
+    module.videos = videos;
+    await learningPath.save();
+
+    res.status(200).json({message: "Videos fetched successfully", videos});
+  } catch (error) {
+    res.status(500).json({message: "Error fetching videos from YouTube", error: error.message});
+  }
+}
+
+// Fetch repositories for a module (to be implemented)
+export const fetchRepositoriesForModule = async (req, res) => {
+  const {pathId,moduleId,moduleTitle} = req.params;
+
+  const q = `${moduleTitle} in:name,description,readme stars:>50`;
+  const GITHUB_TOKEN = process.env.GITHUB_TOKEN;
+  try {
+    const response = await axios.get("https://api.github.com/search/repositories", {
+      headers: {
+        Accept: "application/vnd.github+json",
+        Authorization: GITHUB_TOKEN ? `Bearer ${GITHUB_TOKEN}` : undefined,
+      },
+      params: {
+        q,
+        sort: "stars",
+        order: "desc",
+        per_page: 3,
+      }
+    })
+
+    if (!res.data || !Array.isArray(res.data.items)) return [];
+
+    const repos = response.data.items.map(repo => ({
+      name: repo.name,
+      description: repo.description,
+      url: repo.html_url,
+      stars: repo.stargazers_count,
+      language: repo.language,
+      owner: repo.owner.login,
+    }))
+
+    //insert this array into the module's repos field
+    const learningPath = await LearningPath.findById(pathId);
+    if(!learningPath) res.status(404).json({message: "Learning path not found"});
+
+    const module = learningPath.modules.id(moduleId);
+    if(!module) res.status(404).json({message: "Module not found"});
+    module.repos = repos;
+    await learningPath.save();
+
+    res.status(200).json({message: "Repositories fetched successfully", repos});
+  } catch (error) {
+    return res.status(500).json({message: "Error fetching repositories from GitHub", error: error.message});
   }
 }

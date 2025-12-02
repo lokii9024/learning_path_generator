@@ -1,12 +1,5 @@
 import mongoose from "mongoose";
 
-const resourceSchema = new mongoose.Schema({
-    title: String,
-    type: String, // e.g., "video", "article", "book", "repository"
-    url: String,
-    platform: String // e.g., "YouTube", "Coursera", "Udemy"
-})
-
 const moduleSchema = new mongoose.Schema({
     title: {
         type: String,
@@ -17,7 +10,25 @@ const moduleSchema = new mongoose.Schema({
         required: true
     },
     duration: String, // e.g., "2 weeks", "1 month"
-    resources: [resourceSchema],
+    videos: [
+    {
+      title: String,
+      channel: String,
+      thumbnail: String,
+      url: String,
+      publishedAt: String,
+    },
+    ],
+    repos: [
+        {
+        name: String,
+        description: String,
+        url: String,
+        stars: Number,
+        language: String,
+        owner: String,
+        },
+    ],
     isCompleted: {
         type: Boolean,
         default: false
