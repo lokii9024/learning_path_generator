@@ -21,9 +21,11 @@ app.get('/', (req,res) => {
 //import Routes
 import userRoutes from './routes/user.route.js'
 import pathRoutes from './routes/learningPaths.route.js'
+import paymentRoutes from './routes/payment.route.js'
 
 // Routes declaration
 app.use('/api/v1/users', userRoutes)
 app.use('/api/v1/paths', pathRoutes)
+app.use('/api/v1/payments', paymentRoutes)
 
 export {app}

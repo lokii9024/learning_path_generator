@@ -1,6 +1,7 @@
 import express from 'express';
 import { verifyJWT } from '../middlewares/auth.middleware.js';
 import { createLearningPath, getLearningPaths, getLearningPathById, deleteLearningPath,markORunmarkModule, fetchYtVideosForModule, fetchRepositoriesForModule, getModulesOfLearningPath } from '../controllers/learningPath.controller.js';
+import { premiumMiddleware } from '../middlewares/premium.middleware.js';
 
 const router = express.Router();
 
@@ -25,9 +26,9 @@ router.patch('/:pathId/modules/:moduleId/complete', verifyJWT, markORunmarkModul
 router.delete('/:id', verifyJWT, deleteLearningPath)
 
 // fetch yt videos for a module
-router.get('/:pathId/module/videos/:moduleId/:moduleTitle', verifyJWT, fetchYtVideosForModule)
+router.get('/:pathId/module/videos/:moduleId/:moduleTitle', verifyJWT,premiumMiddleware, fetchYtVideosForModule)
 
 // fetch github repos for a module
-router.get('/:pathId/module/repos/:moduleId/:moduleTitle', verifyJWT, fetchRepositoriesForModule)
+router.get('/:pathId/module/repos/:moduleId/:moduleTitle', verifyJWT,premiumMiddleware, fetchRepositoriesForModule)
 
 export default router;

@@ -19,6 +19,14 @@ const userSchema = new mongoose.Schema({
         type: String,
         default: ""
     },
+    isPremium:{
+        type: Boolean,
+        default: false
+    },
+    premiumSince:{
+        type: Date,
+        default: null
+    }
 },{
     timestamps: true
 })
