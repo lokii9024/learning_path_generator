@@ -12,12 +12,18 @@ export const checkEmailFormat = (email) => {
 }
 
 export const checkEmailDomain = (email) => {
-    const domain = email.split('@')[1];
-    dns.resolveMx(domain, (err, adderesses) => {
-        if(err || adderesses.length === 0) return false;
-        return true;
-    })
-}
+  const domain = email.split("@")[1];
+
+  return new Promise((resolve) => {
+    dns.resolveMx(domain, (err, addresses) => {
+      if (err || !addresses || addresses.length === 0) {
+        resolve(false);
+      } else {
+        resolve(true);
+      }
+    });
+  });
+};
 
 export const checkEmailExists = async (email) => {
     // This function would typically call an external service to verify email existence
