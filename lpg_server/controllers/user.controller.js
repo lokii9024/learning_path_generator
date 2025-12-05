@@ -4,6 +4,7 @@ import jwt from "jsonwebtoken";
 import cloudinary from "../config/cloudinary.js"
 import fs from "fs";
 import {sendEmail} from "../config/nodemailer.js";
+import {checkEmailDomain,checkEmailFormat} from "../config/emailValidation.js"
 
 const cookieOptions = {
   httpOnly: true,
@@ -12,24 +13,35 @@ const cookieOptions = {
   maxAge: 60 * 60 * 1000,
 };
 
-// password validation function (do this on frontend instead)
-// min length 8, at least one uppercase, one lowercase, one digit, one special character
-/* const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
-
-const isPasswordValid = (password) => {
-    return passwordRegex.test(password);
-} */
-
-// email validation function (do this on frontend instead)
-/* const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/; */
-/* const isEmailValid = (email) => {
-    return emailRegex.test(email);
-} */
+const passwordRegex = /^(?=.*[0-9])(?=.*[a-z])(?=.*[A-Z])(?=.*[@#$%^&+=])(?=\S+$).{8,20}$/;
+const checkPasswordStrength = (password) => {
+  // At least 8 characters, one uppercase, one lowercase, one number, one special character
+  if(!passwordRegex.test(password)){
+    return false;
+  }
+  return true;
+}
 
 //signup controller
 export const signupUser = async (req, res) => {
   const { username, email, password } = req.body;
+  if(!username || !email || !password){
+    return res.status(400).json({message: "required fields are missing"});
+  }
 
+  if(!checkPasswordStrength(password)){
+    return res.status(400).json({message: "Password must be 8-20 characters long, include uppercase and lowercase letters, a number, and a special character."});
+  }
+
+  if(!checkEmailFormat(email)){
+    return res.status(400).json({message: "Invalid email format"});
+  }
+
+  const domainValid = await checkEmailDomain(email);
+  if(!domainValid){
+    return res.status(400).json({message: "Email domain does not exist"});
+  }
+  
   try {
     // TODO: validate email and password format here
     

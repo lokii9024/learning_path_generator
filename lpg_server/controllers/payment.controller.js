@@ -1,6 +1,8 @@
 import razorpayInstance from "../config/razorpay.js";
-import Payment from "../models/Payment.model.js";
+import {Payment} from "../models/Payment.model.js";
 import crypto from "crypto";
+import {User} from "../models/User.model.js";
+import { sendEmail } from "../config/nodemailer.js";
 
 export const createRazorpayOrder = async (req,res) => {
     const { amount } = req.body;
@@ -75,6 +77,9 @@ export const verifyRazorpayPayment = async (req,res) => {
         user.isPremium = true;
         await user.save();
 
+        // send email notification
+        await sendEmail(user.email, "Payment Successful", "Congo!! Your payment was successful and your account is now premium for next 1 Month.");
+
         return res.status(200).json({ message: "Payment verified successfully" });
     } catch (error) {
         return res.status(500).json({ message: "Server error", error: error.message });
@@ -135,7 +140,8 @@ export const webhookHandler = async (req,res) => {
             user.isPremium = true;
             await user.save();
 
-            paymentRecord.populate('userId');
+            // send email notification (assuming sendEmail is properly imported)
+            await sendEmail(user.email, "Payment Successful", "Congo!! Your payment was successful and your account is now premium for next 1 Month.");
 
             return res.status(200).json({ message: "Webhook processed: Payment successful" }, paymentRecord);
         }

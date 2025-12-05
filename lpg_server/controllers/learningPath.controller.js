@@ -2,6 +2,7 @@ import {LearningPath }from "../models/LearningPath.model.js";
 import openaiClient from "../config/openaiClient.js";
 import axios from "axios";
 import dotenv from "dotenv";
+import { sendEmail } from "../config/nodemailer.js";
 
 dotenv.config();
 
@@ -96,6 +97,8 @@ Each module title should:
     })
 
     const savedLearningPath = await newLearningPath.save();
+
+    await sendEmail(req.user.email, "Learning Path Created", `Your learning path for "${goal}" has been created successfully!`);
 
     res.status(201).json({message: "Learning path created successfully", learningPath: savedLearningPath});
   } catch (error) {
@@ -228,6 +231,8 @@ export const deleteLearningPath = async (req, res) => {
       return res.status(404).json({message: "Learning path not found"});
     }
     const deletedLpg = await LearningPath.findOneAndDelete({_id: id, userId});
+
+    await sendEmail(req.user.email, "Learning Path Deleted", `Your learning path for "${doesLpgExist.goal}" has been deleted.`);
 
     res.status(200).json({message: "Learning path deleted successfully", learningPath: deletedLpg});
   } catch (error) {
