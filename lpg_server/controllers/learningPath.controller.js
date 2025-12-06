@@ -6,8 +6,26 @@ import { sendEmail } from "../config/nodemailer.js";
 
 dotenv.config();
 
+const models = {
+  freemium: ["llama-3.1-8b-instant", "mixtral-8x7b-32768"],
+  premium: ["llama-3.3-70b-versatile", "qwen/qwen3-32b", "openai/gpt-oss-20b"]
+}
+
 // Create a new learning path
 export const createLearningPath = async (req, res) => {
+  if(req.user?.isPremium === false && req.user?.callsForCreatePath >= 1){
+    return res.status(403).json({message: "Access denied. Premium membership required to create more learning paths.(you can create only 1 learning path as a free user)."});
+  }
+
+  const MODEL_ID = req.body;
+  if(!MODEL_ID){
+    return res.status(400).json({message: "Model ID is required in request body"});
+  }
+
+  if(!req.user.isPremium && !models.freemium.includes(MODEL_ID)){
+    return res.status(403).json({message: "Access denied. The selected model is available for premium users only."});
+  }
+
   // Implementation here
   const {goal, skillLevel, duration, dailyCommitment} = req.body;
   if(!goal || !skillLevel || !duration || !dailyCommitment){
@@ -71,7 +89,7 @@ Each module title should:
 
   try {
     const response = await openaiClient.chat.completions.create({
-      model: process.env.GROQ_API_MODEL_ID,
+      model: MODEL_ID,
       messages:[
         { role: "system", content: "You are a helpful AI assistant that generates structured learning plans." },
         { role: "user", content: prompt },
@@ -97,6 +115,10 @@ Each module title should:
     })
 
     const savedLearningPath = await newLearningPath.save();
+
+    //increment user's totalGeneratedLpgs count
+    req.user.callsForCreatePath = (req.user.callsForCreatePath || 0) + 1;
+    await req.user.save();
 
     await sendEmail(req.user.email, "Learning Path Created", `Your learning path for "${goal}" has been created successfully!`);
 

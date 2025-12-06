@@ -19,6 +19,10 @@ const userSchema = new mongoose.Schema({
         type: String,
         default: ""
     },
+    callsForCreatePath: {
+        type: Number,
+        default: 0
+    },
     isPremium:{
         type: Boolean,
         default: false
