@@ -1,14 +1,14 @@
 import express from 'express';
 import { verifyJWT } from '../middlewares/auth.middleware.js';
 import { createLearningPath, getLearningPaths, getLearningPathById, deleteLearningPath,markORunmarkModule, fetchYtVideosForModule, fetchRepositoriesForModule, getModulesOfLearningPath } from '../controllers/learningPath.controller.js';
-import { premiumMiddleware } from '../middlewares/premium.middleware.js';
+import { premiumMiddleware, premiumMiddlewareOptional } from '../middlewares/premium.middleware.js';
 
 const router = express.Router();
 
 // Define your learning paths routes here
 
 // to generate a learning path
-router.post('/generate', verifyJWT, createLearningPath)
+router.post('/generate', verifyJWT, premiumMiddlewareOptional,createLearningPath)
 
 // to get all learning paths for logged in user
 router.get('/', verifyJWT, getLearningPaths)

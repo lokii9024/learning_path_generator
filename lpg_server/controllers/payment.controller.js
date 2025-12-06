@@ -75,6 +75,7 @@ export const verifyRazorpayPayment = async (req,res) => {
             return res.status(404).json({ message: "User not found" });
         }
         user.isPremium = true;
+        user.premiumSince = Date.now();
         await user.save();
 
         // send email notification
@@ -138,6 +139,7 @@ export const webhookHandler = async (req,res) => {
             }
 
             user.isPremium = true;
+            user.premiumSince = Date.now();
             await user.save();
 
             // send email notification (assuming sendEmail is properly imported)
