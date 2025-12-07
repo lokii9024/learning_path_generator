@@ -1,9 +1,10 @@
 import React from 'react'
+import ComingSoon from './pages/Coming_soon.jsx'
 function App() {
 
   return (
     <>
-      <h1 className='text-6xl bg-teal-300'>Welcome to LPG!!!</h1>
+      <ComingSoon />
     </>
   )
 }
