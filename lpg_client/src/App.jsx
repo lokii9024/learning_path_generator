@@ -1,11 +1,17 @@
 import React from 'react'
-import ComingSoon from './pages/Coming_soon.jsx'
+import { Outlet } from 'react-router-dom'
+import Navbar from './components/custom/Navbar.jsx'
 function App() {
 
   return (
-    <>
-      <ComingSoon />
-    </>
+    <div className='min-h-screen flex flex-wrap content-between '>
+      <div className='w-full block'>
+        <Navbar/>
+        <main>
+          <Outlet/>
+        </main>
+      </div>
+    </div>
   )
 }
 
