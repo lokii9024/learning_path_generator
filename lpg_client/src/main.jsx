@@ -32,7 +32,7 @@ const router = createBrowserRouter([
         element: <GeneratePath />,
       },
       {
-        path: "my-paths",
+        path: "user/my-paths",
         element: <MyPaths />,
       },
       {

@@ -1,7 +1,7 @@
 // src/pages/SignUp.jsx
 import React from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useForm } from "react-hook-form";
+import { useForm,useWatch } from "react-hook-form";
 import { z } from "zod";
 import { useNavigate } from "react-router-dom";
 import { useMemo } from "react";
@@ -56,8 +56,17 @@ export default function SignUp() {
     },
   });
 
-//   const score = useMemo(() => calcPasswordScore(value), [value]);
-//   const pct = Math.round((score / 4) * 100);
+  const passwordValue = useWatch({
+    control: form.control,
+    name: "password",
+  });
+
+  const score = useMemo(
+    () => calcPasswordScore(passwordValue),
+    [passwordValue]
+  );
+
+  const pct = Math.round((score / 4) * 100);
 
   const navigate = useNavigate();
 
@@ -125,7 +134,7 @@ export default function SignUp() {
                   <FormControl>
                     <Input type="password" placeholder="Create a password" {...field} className="bg-[#F7F9F9] border border-[#E6EEF0]" />
                   </FormControl>
-                  {/* <div className="mt-2">
+                  {<div className="mt-2">
                         <div className="w-full h-2 rounded-full bg-[#EDF7F6] overflow-hidden">
                         <div
                             style={{
@@ -139,7 +148,7 @@ export default function SignUp() {
                         <div className="mt-1 text-xs text-[#636E72] flex items-center justify-between">
                         <div>{scoreLabel(score)}</div>
                         </div>
-                    </div> */}
+                    </div>}
                   <FormMessage />
                 </FormItem>
               )}
