@@ -12,7 +12,7 @@ import SignUp from './pages/SignUp.jsx'
 import GeneratePath from './pages/GeneratePath.jsx'
 import MyPaths from './pages/MyPaths.jsx'
 import PathModules from './pages/PathModules'
-import AuthLayout from './components/custom/authLayout'
+import AuthLayout from './components/custom/AuthLayout'
 
 const router = createBrowserRouter([
   {
