@@ -15,6 +15,10 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
+import { useDispatch } from "react-redux";
+import { signUpUser } from "@/utils/auth_ctb";
+import { toastError, toastSuccess } from "@/lib/sonner";
+import { signInSuccess } from "@/store/authSlice";
 
 /* simple password scoring (same as SignUp) */
 function calcPasswordScore(pw = "") {
@@ -41,7 +45,7 @@ function scoreColor(score) {
 
 /* validation schema */
 const formSchema = z.object({
-  name: z.string().min(2, { message: "Username must be at least 2 characters." }),
+  username: z.string().min(2, { message: "Username must be at least 2 characters." }),
   email: z.string().min(2, { message: "Email is required" }),
   password: z.string().min(8, { message: "Password must be at least 8 characters" }),
 });
@@ -50,7 +54,7 @@ export default function SignUp() {
   const form = useForm({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      name: "",
+      username: "",
       email: "",
       password: "",
     },
@@ -69,9 +73,28 @@ export default function SignUp() {
   const pct = Math.round((score / 4) * 100);
 
   const navigate = useNavigate();
+  const dispatch = useDispatch();
+  const [loading, setLoading] = React.useState(false);
 
   async function onSubmit(values) {
-    
+    setLoading(true);
+    console.log(values);
+    try {
+      const res = await signUpUser({...values});
+      const newUser = res?.user || null;
+      const message = res?.message || '';
+      console.log(message);
+      if(user){
+        dispatch(signInSuccess({user: newUser}));
+        navigate("/")
+      }
+      toastSuccess(message || "Account created successfully!")
+    } catch (error) {
+      console.log(error?.message);
+      toastError(error.message || "Error creating account" )
+    }finally{
+      setLoading(false);
+    }
   }
 
   return (
@@ -99,12 +122,12 @@ export default function SignUp() {
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
             <FormField
               control={form.control}
-              name="name"
+              name="username"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel className="text-sm font-medium text-[#2D3436]">Name</FormLabel>
+                  <FormLabel className="text-sm font-medium text-[#2D3436]">Username</FormLabel>
                   <FormControl>
-                    <Input placeholder="Full name" {...field} className="bg-[#F7F9F9] border border-[#E6EEF0]" />
+                    <Input placeholder="Preffered username" {...field} className="bg-[#F7F9F9] border border-[#E6EEF0]" />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -154,15 +177,15 @@ export default function SignUp() {
               )}
             />
 
-            <Button type="submit" className="w-full bg-[#F7B801] text-[#111] hover:bg-[#D49D00]">
-              Create account
+            <Button type="submit" className="cursor-pointer w-full bg-[#F7B801] text-[#111] hover:bg-[#D49D00]">
+              {loading ? "Creating Account..." : "Sign Up"}
             </Button>
           </form>
         </Form>
 
         <div className="mt-4 text-center text-sm text-[#636E72]">
           Already have an account?{" "}
-          <a href="#" className="font-medium text-[#1A535C] hover:underline">Sign in</a>
+          <a onClick={() => navigate("/signin")} className="cursor-pointer font-medium text-[#1A535C] hover:underline">Sign in</a>
         </div>
       </div>
     </div>

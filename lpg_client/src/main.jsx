@@ -2,6 +2,9 @@ import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
 import './index.css'
 import App from './App.jsx'
+import { Provider } from 'react-redux'
+import {store,persistor} from './store/index.js'
+import { PersistGate } from "redux-persist/integration/react";
 import { createBrowserRouter, RouterProvider } from 'react-router-dom'
 import Home from './pages/Home.jsx'
 import SignIn from './pages/SignIn.jsx'
@@ -9,6 +12,7 @@ import SignUp from './pages/SignUp.jsx'
 import GeneratePath from './pages/GeneratePath.jsx'
 import MyPaths from './pages/MyPaths.jsx'
 import PathModules from './pages/PathModules'
+import AuthLayout from './components/custom/authLayout'
 
 const router = createBrowserRouter([
   {
@@ -29,52 +33,24 @@ const router = createBrowserRouter([
       },
       {
         path: "generate-path",
-        element: <GeneratePath />,
+        element: <AuthLayout><GeneratePath /></AuthLayout>,
       },
       {
         path: "user/my-paths",
-        element: <MyPaths />,
+        element: <AuthLayout><MyPaths /></AuthLayout>,
       },
       {
-        path: "pathModules",
-        element: <PathModules/>,
+        path: "paths/:pathId",
+        element: <AuthLayout><PathModules /></AuthLayout>,
       }
-      /* {
-        path: "/",
-        element: <Hero />,
-      },
-      {
-        path: "howItWorks",
-        element: <HowItWorksPage />,
-      },
-      {
-        path: "dashboard/:slug",
-        element: (
-          <AuthLayout>
-            <Outlet />
-          </AuthLayout>
-        ),
-        children: [
-          {
-            path: "",
-            element: <Dashboard/>
-          },
-          {
-            path: "update-pass/:id",
-            element: <EditPass/>
-          },
-          {
-            path: "add-pass",
-            element: <AddPass/>
-          }
-        ]
-      }, */
     ],
   },
 ]);
 
 createRoot(document.getElementById('root')).render(
-  <StrictMode>
-    <RouterProvider router={router} />
-  </StrictMode>,
+    <Provider store={store}>
+        <PersistGate loading={null} persistor={persistor}>
+          <RouterProvider router={router} />
+        </PersistGate>
+    </Provider>
 )

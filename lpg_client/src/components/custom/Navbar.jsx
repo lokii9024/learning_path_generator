@@ -2,7 +2,6 @@
 import React, { useEffect, useRef, useState, useCallback } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 
-/* shadcn/ui primitives - use your project's implementations */
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
@@ -14,22 +13,17 @@ import {
   DropdownMenuSeparator,
 } from "@/components/ui/dropdown-menu";
 
-/**
- * NavbarPolaris
- * Props:
- *  - isLoggedIn (bool)
- *  - userName (string)
- *  - isPro (bool) -> shows Pro / Free text beside avatar
- *  - onLogout (fn)
- *  - onUpgrade (fn) - optional callback for upgrade actions
- */
+import { useSelector, useDispatch } from "react-redux";
+import { logOut } from "@/store/authSlice";
+import { clearPathState } from "@/store/pathSlice";
+import { logoutUser } from "@/utils/auth_ctb";
+import { toastError, toastSuccess } from "@/lib/sonner";
+
 export default function NavbarPolaris({
-  isLoggedIn = false,
-  userName = "PV",
-  isPro = false,
   onLogout = () => console.log("logout"),
   onUpgrade = () => console.log("upgrade plan"),
 }) {
+  const dispatch = useDispatch();
   const navigate = useNavigate();
   const location = useLocation();
   const [drawerOpen, setDrawerOpen] = useState(false);
@@ -37,6 +31,9 @@ export default function NavbarPolaris({
   const [isScrolled, setIsScrolled] = useState(false);
   const dropdownRef = useRef(null);
   const drawerRef = useRef(null);
+
+  const {user,isLoggedIn,isPro} = useSelector((state) => state.auth);
+  const userName = user?.username || "";
 
   // Handle scroll effect for navbar
   useEffect(() => {
@@ -99,11 +96,23 @@ export default function NavbarPolaris({
     navigate(path);
   }
 
-  function handleLogout() {
+  async function handleLogout() {
     setDrawerOpen(false);
     setDropdownOpen(false);
-    onLogout();
-    navigate("/");
+    try {
+      await logoutUser();
+    } catch (error) {
+      console.error("Logout failed:", error);
+      dispatch(logOut());
+      persistor.purge();
+      toastError("Error while logging out!!, try again")
+    }finally{
+      dispatch(logOut());
+      persistor.purge(); // 🔥 clears persisted storage
+      dispatch(clearPathState());
+      toastSuccess("Logged out successfully");
+      window.location.replace("/signin");
+    }
   }
 
   function handleUpgrade() {
@@ -199,7 +208,7 @@ export default function NavbarPolaris({
                   key={link.path}
                   variant="ghost"
                   onClick={() => navigate(link.path)}
-                  className={`text-sm px-4 py-2 rounded-lg transition-colors ${
+                  className={`cursor-pointer text-sm px-4 py-2 rounded-lg transition-colors ${
                     isActive 
                       ? "text-white bg-white/10" 
                       : "text-white/80 hover:text-white hover:bg-white/5"
@@ -218,13 +227,13 @@ export default function NavbarPolaris({
                 <Button
                   variant="ghost"
                   onClick={() => navigate("/signup")}
-                  className="hidden sm:inline-flex text-white/80 hover:text-white hover:bg-white/5 text-sm"
+                  className="cursor-pointer hidden sm:inline-flex text-white/80 hover:text-white hover:bg-white/5 text-sm"
                 >
                   Sign Up
                 </Button>
                 <Button
                   onClick={() => navigate("/signin")}
-                  className="text-sm px-4 py-2 rounded-lg"
+                  className="cursor-pointer text-sm px-4 py-2 rounded-lg"
                   style={{
                     background: theme.secondary,
                     color: theme.textDark,
@@ -239,7 +248,7 @@ export default function NavbarPolaris({
                 {!isPro && (
                   <Button
                     onClick={handleUpgrade}
-                    className="hidden lg:inline-flex text-sm px-4 py-2 rounded-lg font-semibold transition-all hover:scale-105 active:scale-95"
+                    className="cursor-pointer hidden lg:inline-flex text-sm px-4 py-2 rounded-lg font-semibold transition-all hover:scale-105 active:scale-95"
                     style={{
                       background: `linear-gradient(135deg, ${theme.secondary}, ${theme.accent})`,
                       color: theme.textDark,
@@ -260,7 +269,7 @@ export default function NavbarPolaris({
                     <DropdownMenuTrigger asChild>
                       <Button
                         variant="ghost"
-                        className="inline-flex items-center gap-2 lg:gap-3 hover:bg-white/5 rounded-lg"
+                        className="cursor-pointer inline-flex items-center gap-2 lg:gap-3 hover:bg-white/5 rounded-lg"
                         aria-label="User menu"
                       >
                         <Avatar className="w-9 h-9 border-2 border-white/20 relative">
@@ -345,7 +354,7 @@ export default function NavbarPolaris({
                           <Button
                             size="sm"
                             onClick={handleUpgrade}
-                            className="w-full h-8 text-xs font-semibold mb-1"
+                            className="cursor-pointer w-full h-8 text-xs font-semibold mb-1"
                             style={{
                               background: theme.secondary,
                               color: theme.textDark,
@@ -369,12 +378,12 @@ export default function NavbarPolaris({
                       >
                         Profile
                       </DropdownMenuItem>
-                      <DropdownMenuItem 
+                      {/* <DropdownMenuItem 
                         onClick={() => navigate("/settings")}
                         className="cursor-pointer px-3 py-2 text-sm rounded-md hover:bg-gray-50"
                       >
                         Settings
-                      </DropdownMenuItem>
+                      </DropdownMenuItem> */}
                       
                       <DropdownMenuSeparator className="my-1" style={{ borderColor: "rgba(0,0,0,0.06)" }} />
                       
@@ -394,7 +403,7 @@ export default function NavbarPolaris({
             <Button
               variant="ghost"
               onClick={() => setDrawerOpen(true)}
-              className="md:hidden p-2 hover:bg-white/5"
+              className="cursor-pointer md:hidden p-2 hover:bg-white/5"
               data-drawer-button
               aria-label="Open menu"
             >
@@ -600,13 +609,13 @@ export default function NavbarPolaris({
                         >
                           Profile
                         </Button>
-                        <Button
+                        {/* <Button
                           variant="ghost"
                           onClick={() => navTo("/settings")}
                           className="w-full justify-start text-left px-4 py-3 rounded-lg text-base text-gray-700 hover:bg-gray-50"
                         >
                           Settings
-                        </Button>
+                        </Button> */}
                         
                         {/* Plan management option */}
                         <Button

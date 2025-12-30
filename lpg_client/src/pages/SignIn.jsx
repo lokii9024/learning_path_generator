@@ -15,6 +15,10 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
+import { useDispatch } from "react-redux";
+import { signInUser } from "@/utils/auth_ctb";
+import { toastError, toastSuccess } from "@/lib/sonner";
+import { signInSuccess } from "@/store/authSlice";
 
 
 /* validation schema */
@@ -33,9 +37,27 @@ export default function SignIn() {
   });
 
   const navigate = useNavigate();
+  const dispatch = useDispatch();
+  const [loading, setLoading] = React.useState(false);
 
   async function onSubmit(values) {
-    
+    setLoading(true);
+    console.log("SignIn form values:", values);
+    try {
+      const res = await signInUser({...values});
+      const user = res?.user;
+      const message = res?.message;
+      console.log(message);
+      if(user){
+        dispatch(signInSuccess({ user }));
+        navigate("/");
+      }
+      toastSuccess(message || "Signed in successfully!");
+    } catch (error) {
+      toastError(error.message || "Error signing in" );
+    }finally {
+      setLoading(false);
+    }
   }
 
   return (
@@ -104,8 +126,8 @@ export default function SignIn() {
               <div />
             </div>
 
-            <Button type="submit" className="w-full bg-[#F7B801] text-[#111] hover:bg-[#D49D00]">
-              Sign in
+            <Button type="submit" className="cursor-pointer w-full bg-[#F7B801] text-[#111] hover:bg-[#D49D00]">
+              {loading ? "Signing In..." : "Sign In"}
             </Button>
           </form>
         </Form>

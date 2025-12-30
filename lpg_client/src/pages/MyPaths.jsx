@@ -8,12 +8,17 @@ import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Progress } from "@/components/ui/progress";
 import { Badge } from "@/components/ui/badge";
+import { getUserLearningPaths,deleteLearningPathById,getLearningPathById } from "@/utils/paths_ctb"; 
+import { useDispatch, useSelector } from "react-redux";
+import { deletePath, setAllPaths,setSelectedPathId } from "@/store/pathSlice";
 import {
   DropdownMenu,
   DropdownMenuTrigger,
   DropdownMenuContent,
   DropdownMenuItem,
 } from "@/components/ui/dropdown-menu";
+import { Trash2 } from "lucide-react";
+import { toastError, toastInfo, toastSuccess } from "@/lib/sonner";
 
 /* Mock data */
 const MOCK_PATHS = [
@@ -53,12 +58,57 @@ const MOCK_PATHS = [
 ];
 
 function pct(path) {
-  if (!path.modules) return 0;
-  return Math.round((path.completedModules / path.modules) * 100);
+  if (!path.totalModules) return 0;
+  return Math.round((path.completedModules / path.totalModules) * 100);
 }
 
 export default function MyPaths() {
-  const navigate = useNavigate?.() || (() => {});
+  const navigate = useNavigate() 
+  const dispatch = useDispatch()
+
+  React.useEffect(() => {
+    // In real implementation, fetch user's learning paths from backend
+    async function fetchPaths() {
+      try {
+        const res = await getUserLearningPaths();
+        const learningPaths = res.learningPaths;
+        const message = res.message;
+        if(learningPaths){
+          dispatch(setAllPaths({paths:learningPaths}));
+          toastSuccess(message || 'Learning paths loaded successfully');
+        }else{
+          toastInfo(message || 'No learning paths found');
+        }
+      } catch (error) {
+        toastError(error.message || 'An error occurred while fetching learning paths');
+      }
+    }
+    fetchPaths();
+  }, [dispatch]);
+
+  const paths = useSelector((state) => state.path.allPaths) || [];
+
+  async function handleDeletePath(pathId) {
+    //confirm deletion
+    const con = window.confirm('Are you sure you want to delete this learning path? This action cannot be undone.');
+    if(!con) return;
+    try {
+      const res = await deleteLearningPathById(pathId);
+      if(res){
+        dispatch(deletePath(pathId));
+        toastSuccess('Learning path deleted successfully');
+      } else {
+        toastError('Failed to delete learning path');
+      }
+    } catch (error) {
+      toastError(error.message || 'An error occurred while deleting learning path');
+    }
+  }
+
+  function handleMakeProgress(pathId) {
+    dispatch(setSelectedPathId(pathId));
+    navigate(`/paths/${pathId}`);
+  }
 
   return (
     <div className="min-h-screen bg-[#F7F9F9] p-4 sm:p-6 md:p-10">
@@ -79,9 +129,9 @@ export default function MyPaths() {
           <div className="flex items-center gap-3 ml-auto">
             <Button
               asChild
-              className="hidden sm:inline-flex bg-[#F7B801] text-[#111] shadow-sm"
+              className="cursor-pointer hidden sm:inline-flex bg-[#F7B801] text-[#111] shadow-sm"
             >
-              <a href="#" className="inline-flex items-center gap-2 px-4 py-2">
+              <a onClick={() => navigate("/generate-path")} className="inline-flex items-center gap-2 px-4 py-2">
                 + New path
               </a>
             </Button>
@@ -89,7 +139,7 @@ export default function MyPaths() {
         </header>
 
         <div className="space-y-4">
-          {MOCK_PATHS.map((p) => {
+          {paths.map((p) => {
             const percent = pct(p);
 
             return (
@@ -105,7 +155,7 @@ export default function MyPaths() {
                       <div className="flex-shrink-0">
                         <Avatar className="w-12 h-12 md:w-14 md:h-14">
                           <AvatarFallback className="bg-[#1A535C] text-white w-12 h-12 md:w-14 md:h-14 rounded-lg flex items-center justify-center">
-                            {p.title
+                            {p.goal
                               .split(" ")
                               .slice(0, 2)
                               .map((s) => s[0])
@@ -116,23 +166,23 @@ export default function MyPaths() {
 
                       <div className="min-w-0">
                         <h3 className="text-base md:text-lg font-semibold text-[#2D3436] truncate">
-                          {p.title}
+                          {p.goal}
                         </h3>
                         <p className="mt-1 text-sm text-[#636E72] truncate">
-                          {p.description}
+                          Level: {p.skillLevel}
                         </p>
 
                         <div className="mt-3 flex flex-wrap items-center gap-3 text-xs text-[#636E72]">
                           <div className="flex items-center gap-2">
                             <span className="font-medium text-[#2D3436]">
-                              {p.modules}
+                              {p.totalModules}
                             </span>
                             <span>modules</span>
                           </div>
 
                           <div className="flex items-center gap-2">
                             <span className="font-medium text-[#2D3436]">
-                              {p.estTime}
+                              {p.duration}
                             </span>
                             <span>est.</span>
                           </div>
@@ -173,54 +223,21 @@ export default function MyPaths() {
                       {/* BUTTON + DROPDOWN — side by side on ALL mobile sizes */}
                       <div className="flex w-full sm:w-auto items-center gap-2">
                         <Button
-                          className="flex-1 sm:flex-none bg-[#F7B801] text-[#111]"
-                          onClick={() => navigate(`/paths/${p.id}`)}
+                          className="cursor-pointer flex-1 sm:flex-none bg-[#F7B801] text-[#111]"
+                          onClick={() => handleMakeProgress(p._id)}
                         >
                           Make Progress
                         </Button>
 
-                        <DropdownMenu>
-                          <DropdownMenuTrigger asChild>
-                            <Button variant="ghost" className="p-2 shrink-0">
-                              <svg
-                                width="16"
-                                height="16"
-                                viewBox="0 0 24 24"
-                                fill="none"
-                              >
-                                <circle cx="12" cy="5" r="1.5" fill="#2D3436" />
-                                <circle
-                                  cx="12"
-                                  cy="12"
-                                  r="1.5"
-                                  fill="#2D3436"
-                                />
-                                <circle
-                                  cx="12"
-                                  cy="19"
-                                  r="1.5"
-                                  fill="#2D3436"
-                                />
-                              </svg>
-                            </Button>
-                          </DropdownMenuTrigger>
-
-                          <DropdownMenuContent
-                            side="bottom"
-                            align="end"
-                            className="w-44"
-                          >
-                            <DropdownMenuItem asChild>
-                              <a href="#">Edit</a>
-                            </DropdownMenuItem>
-                            <DropdownMenuItem asChild>
-                              <a href="#">Duplicate</a>
-                            </DropdownMenuItem>
-                            <DropdownMenuItem asChild>
-                              <a href="#">Delete</a>
-                            </DropdownMenuItem>
-                          </DropdownMenuContent>
-                        </DropdownMenu>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="cursor-pointer text-red-600 hover:bg-red-50 hover:text-red-700"
+                          onClick={() => handleDeletePath(p._id)} // your delete handler
+                          aria-label="Delete"
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </Button>
                       </div>
                     </div>
                   </div>
@@ -244,7 +261,9 @@ export default function MyPaths() {
                 Generate your first learning path to get started.
               </p>
               <div className="mt-4">
-                <Button className="bg-[#F7B801] text-[#111]">
+                <Button 
+                onClick={() => navigate("/generate-path")}
+                className="cursor-pointer bg-[#F7B801] text-[#111]">
                   Create a path
                 </Button>
               </div>

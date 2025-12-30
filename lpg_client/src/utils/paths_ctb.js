@@ -14,8 +14,9 @@ export const generateLearningPath = async ({goal, skillLevel, duration, dailyCom
             }
         );
 
-        const learningPath = res?.data?.learningPath;
-        return learningPath;
+        const learningPath = res?.data?.learningPath || null;
+        const message = res?.data?.message || '';
+        return {learningPath, message};
     } catch (error) {
         const message = error.response?.data?.message || 'Failed to generate learning path';
         throw {message, status: error.response?.status || 500};
@@ -25,7 +26,6 @@ export const generateLearningPath = async ({goal, skillLevel, duration, dailyCom
 export const getUserLearningPaths = async () => {
     try {
         const res = await axios.get(`${API_BASE_URL}/`, 
-            {},
             {
                 withCredentials: true,
                 headers: {
@@ -34,8 +34,9 @@ export const getUserLearningPaths = async () => {
             }
         )
 
-        const learningPaths = res?.data?.LearningPaths;
-        return learningPaths;
+        const learningPaths = res?.data?.LearningPaths || [];
+        const message = res?.data?.message || '';
+        return {learningPaths, message};
     } catch (error) {
         const message = error.response?.data?.message || 'Failed to fetch learning paths';
         throw {message, status: error.response?.status || 500};
@@ -45,7 +46,6 @@ export const getUserLearningPaths = async () => {
 export const getLearningPathById = async (pathId) => {
     try {
         const res = await axios.get(`${API_BASE_URL}/${pathId}`,
-            {},
             {
                 withCredentials: true,
                 headers: {
@@ -54,8 +54,9 @@ export const getLearningPathById = async (pathId) => {
             }
         )
 
-        const learningPath = res?.data?.learningPath;
-        return learningPath;
+        const learningPath = res?.data?.learningPath || null;
+        const message = res?.data?.message || '';
+        return {learningPath,message};
     } catch (error) {
         const message = error.response?.data?.message || 'Failed to fetch learning path';
         throw {message, status: error.response?.status || 500};
@@ -73,8 +74,11 @@ export const deleteLearningPathById = async (pathId) => {
                 },
             }
         )
-
-        return true;
+        
+        const message = res?.data?.message || 'Learning path deleted successfully';
+        const deleted = res?.data?.learningPath || null;
+        if(deleted) return true;
+        return false;
     } catch (error) {
         const message = error.response?.data?.message || 'Failed to delete learning path';
         throw {message, status: error.response?.status || 500};
@@ -84,7 +88,6 @@ export const deleteLearningPathById = async (pathId) => {
 export const fetchYtVideosForModule = async (pathId, moduleId, moduleTitle) => {
     try {
         const res = await axios.get(`${API_BASE_URL}/${pathId}/module/videos/${moduleId}/${moduleTitle}`,
-            {},
             {
                 withCredentials: true,
                 headers: {
@@ -93,8 +96,9 @@ export const fetchYtVideosForModule = async (pathId, moduleId, moduleTitle) => {
             }
         )
 
-        const videos = res?.data?.videos;
-        return videos;
+        const videos = res?.data?.videos || [];
+        const message = res?.data?.message || '';
+        return { videos, message };
     } catch (error) {
         const message = error.response?.data?.message || 'Failed to fetch videos';
         throw {message, status: error.response?.status || 500};
@@ -104,7 +108,6 @@ export const fetchYtVideosForModule = async (pathId, moduleId, moduleTitle) => {
 export const fetchRepositoriesForModule = async (pathId, moduleId, moduleTitle) => {
     try {
         const res = await axios.get(`${API_BASE_URL}/${pathId}/module/repos/${moduleId}/${moduleTitle}`,
-            {},
             {
                 withCredentials: true,
                 headers: {
@@ -113,8 +116,10 @@ export const fetchRepositoriesForModule = async (pathId, moduleId, moduleTitle) 
             }
         )
 
-        const repositories = res?.data?.repos;
-        return repositories;
+        const repositories = res?.data?.repos || [];
+        const message = res?.data?.message || '';
+
+        return {repositories, message};
     } catch (error) {
         const message = error.response?.data?.message || 'Failed to fetch repositories';
         throw {message, status: error.response?.status || 500};
@@ -133,9 +138,10 @@ export const markOrUnmarkModuleAsCompleted = async (pathId, moduleId) => {
             }
         )
 
-        const progress = res?.data?.progress;
-        const message = res?.data?.message;
-        const newStatus = res?.data?.module.isCompleted;
+        const success = res?.data?.success || false;
+        const progress = res?.data?.progress || null;
+        const message = res?.data?.message || '';
+        const newStatus = res?.data?.module?.isCompleted;
         return {progress, message, newStatus};
     } catch (error) {
         const message = error.response?.data?.message || 'Failed to update module status';

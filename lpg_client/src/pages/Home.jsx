@@ -1,6 +1,11 @@
+import { Button } from "@/components/ui/button";
 import React from "react";
+import { useNavigate } from "react-router-dom";
+import { useSelector } from "react-redux";
 
 export default function Home() {
+  const navigate = useNavigate();
+  const {isLoggedIn} = useSelector((state) => state.auth);
   
   return (
     <section className="min-h-[90vh] flex items-center justify-center bg-[#F7F9F9] px-6">
@@ -24,8 +29,8 @@ export default function Home() {
         {/* CTA Buttons */}
         <div className="mt-8 flex flex-col sm:flex-row items-center justify-center gap-4">
           <a
-            href="#"
-            className="px-8 py-3 rounded-xl text-sm font-semibold shadow-md"
+            onClick={() => navigate(isLoggedIn ? "/generate-path" : "/signin")}
+            className="px-8 py-3 rounded-xl text-sm font-semibold shadow-md cursor-pointer"
             style={{
               background: "#F7B801",
               color: "#111",
@@ -36,8 +41,8 @@ export default function Home() {
           </a>
 
           <a
-            href="#"
-            className="px-7 py-3 rounded-xl text-sm font-medium border border-[#1A535C] text-[#1A535C] hover:bg-[#e9f2f2] transition"
+            onClick={() => navigate(isLoggedIn ? "/user/my-paths" : "/signin")}
+            className="px-7 py-3 rounded-xl text-sm font-medium border border-[#1A535C] text-[#1A535C] hover:bg-[#e9f2f2] transition cursor-pointer"
           >
             Browse Paths
           </a>

@@ -17,14 +17,14 @@ export const createLearningPath = async (req, res) => {
     return res.status(403).json({message: "Access denied. Premium membership required to create more learning paths.(you can create only 1 learning path as a free user)."});
   }
 
-  const MODEL_ID = req.body;
-  if(!MODEL_ID){
-    return res.status(400).json({message: "Model ID is required in request body"});
-  }
+  const MODEL_ID = process.env.GROQ_API_MODEL_ID;
+  // if(!MODEL_ID){
+  //   return res.status(400).json({message: "Model ID is required in request body"});
+  // }
 
-  if(!req.user.isPremium && !models.freemium.includes(MODEL_ID)){
-    return res.status(403).json({message: "Access denied. The selected model is available for premium users only."});
-  }
+  // if(!req.user.isPremium && !models.freemium.includes(MODEL_ID)){
+  //   return res.status(403).json({message: "Access denied. The selected model is available for premium users only."});
+  // }
 
   // Implementation here
   const {goal, skillLevel, duration, dailyCommitment} = req.body;

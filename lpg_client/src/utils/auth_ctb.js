@@ -14,8 +14,9 @@ export const signUpUser = async ({username, email, password}) => {
             }
         );
 
-        const user = res?.data?.user;
-        return user;
+        const user = res?.data?.user || null;
+        const message = res?.data?.message || '';
+        return {user, message};
     } catch (error) {
         const message = error.response?.data?.message || 'Signup failed';
         throw {message, status: error.response?.status || 500};
@@ -34,8 +35,9 @@ export const signInUser = async ({email, password}) => {
             }
         )
 
-        const user = res?.data?.user;
-        return user;
+        const user = res?.data?.user || null;
+        const message = res?.data?.message || '';
+        return {user, message};
     } catch (error) {
         const message = error.response?.data?.message || 'Login failed';
         throw {message, status: error.response?.status || 500};
@@ -60,7 +62,6 @@ export const logoutUser = async () => {
 export const getUserProfile = async () => {
     try {
         const res = await axios.get(`${API_BASE_URL}/profile`,
-            {},
             {
                 withCredentials: true,
                 headers: {
@@ -69,8 +70,9 @@ export const getUserProfile = async () => {
             }
         )
 
-        const user = res?.data?.user;
-        return user;
+        const user = res?.data?.user || null;
+        const message = res?.data?.message || '';
+        return {user, message};
     } catch (error) {
         const message = error.response?.data?.message || 'Fetching profile failed';
         throw {message, status: error.response?.status || 500};

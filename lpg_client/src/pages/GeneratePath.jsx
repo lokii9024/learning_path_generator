@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { z } from "zod";
+import { set, z } from "zod";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useNavigate } from "react-router-dom";
@@ -25,6 +25,10 @@ import {
 } from "@/components/ui/form";
 
 import { Card } from "@/components/ui/card";
+import { useDispatch } from "react-redux";
+import { generateLearningPath } from "@/utils/paths_ctb";
+import { addPath, setSelectedPathId } from "@/store/pathSlice";
+import { toastError, toastInfo, toastSuccess } from "@/lib/sonner";
 
 /* zod schema */
 const schema = z.object({
@@ -52,10 +56,29 @@ export default function GeneratePath() {
     },
   });
 
+  const dispatch = useDispatch();
+
   async function onSubmit(values) {
+    setLoading(true);
     console.log("Generate Path:", values);
-    // Add API logic here if needed
-    navigate("/paths/demo-id"); // demo redirect
+    try {
+      const res = await generateLearningPath({...values});
+      const learningPath = res.learningPath;
+      const message = res.message;
+      if(learningPath){
+        // Store learning path in Redux
+        dispatch(addPath({path:learningPath}));
+        dispatch(setSelectedPathId({pathId:learningPath._id}));
+        // Navigate to path details page
+        navigate(`/paths/${learningPath._id}`); 
+        toastSuccess('Learning path generated successfully!');
+      }
+      else toastInfo(message || 'Failed to generate learning path');
+    } catch (error) {
+      toastError(error.message || 'An error occurred while generating the learning path');
+    }finally{
+      setLoading(false);
+    }
   }
 
   return (

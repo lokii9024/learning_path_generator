@@ -1,9 +1,8 @@
 import { createSlice } from "@reduxjs/toolkit";
-import { is } from "zod/v4/locales";
 
 const initialState = {
     user: null,
-    isAuthenticated: false,
+    isLoggedIn: false,
     isPro: false,
 }
 
@@ -13,19 +12,22 @@ const authSlice = createSlice({
     reducers: {
         signInSuccess : (state,action) => {
             state.user = action.payload.user;
-            state.isAuthenticated = true;
-            state.isPro = action.payload.user.isPremium || false;
+            state.isLoggedIn = true;
+            state.isPro = action.payload.user?.isPremium || false;
         },
         logOut : (state) => {
             state.user = null;
-            state.isAuthenticated = false;
+            state.isLoggedIn = false;
             state.isPro = false;
         },
-        setPro : (state, action) => {
-            state.isPro = action.payload.user.isPremium || false;
+        setPro : (state) => {
+            state.isPro = true;
+        },
+        setUser : (state, action) => {
+            state.user = action.payload.user;
         }
     }
 })
 
-export const { signInSuccess, logOut, setPro } = authSlice.actions;
+export const { signInSuccess, logOut, setPro,setUser } = authSlice.actions;
 export default authSlice.reducer;
