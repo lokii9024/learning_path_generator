@@ -2,7 +2,7 @@ import jwt from 'jsonwebtoken';
 import {User} from '../models/User.model.js';
 
 export const verifyJWT = async (req, res, next) => {
-    const token = req.cookies?.token || req.header['authorization']?.replace('Bearer ', '');
+    const token = req.cookies?.token || req.header("Authorization")?.replace("Bearer ", "")
     
     if(!token){
         console.log("No token provided");

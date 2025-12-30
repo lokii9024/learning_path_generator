@@ -2,7 +2,7 @@ import express from 'express'
 import { signupUser, loginUser, logoutUser, getUserProfile, updateAvatar } from '../controllers/user.controller.js';
 import { verifyJWT } from '../middlewares/auth.middleware.js';
 import { upload } from '../middlewares/multer.middleware.js';
-import { sendEmail } from '../config/nodemailer.js';
+import { premiumMiddlewareOptional } from '../middlewares/premium.middleware.js';
 
 const router = express.Router();
 
@@ -15,8 +15,6 @@ router.post('/login',loginUser)
 // to logout
 router.post('/logout',verifyJWT,logoutUser)
 // to get user profile
-router.get('/profile',verifyJWT,getUserProfile)
-// send email route can be added here if needed
-router.post('/send-email', sendEmail)
+router.get('/profile',verifyJWT,premiumMiddlewareOptional,getUserProfile)
 
 export default router;
