@@ -120,7 +120,7 @@ export default function NavbarPolaris({
     setDropdownOpen(false);
     onUpgrade();
     // You can navigate to upgrade page or show modal
-    navigate("/upgrade");
+    navigate("/plans");
   }
 
   const navLinks = [
@@ -345,32 +345,6 @@ export default function NavbarPolaris({
                         </div>
                       </div>
                       
-                      {/* Upgrade CTA for free users inside dropdown */}
-                      {!isPro && (
-                        <div className="px-3 py-2 mb-1" style={{ background: 'rgba(247, 184, 1, 0.1)' }}>
-                          <div className="text-xs font-semibold text-gray-800 mb-1">
-                            Unlock Pro Features
-                          </div>
-                          <Button
-                            size="sm"
-                            onClick={handleUpgrade}
-                            className="cursor-pointer w-full h-8 text-xs font-semibold mb-1"
-                            style={{
-                              background: theme.secondary,
-                              color: theme.textDark,
-                            }}
-                          >
-                            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" className="mr-1">
-                              <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" 
-                                fill="currentColor" />
-                            </svg>
-                            Upgrade Now
-                          </Button>
-                          <div className="text-[10px] text-gray-600">
-                            Unlimited paths, AI features, and more
-                          </div>
-                        </div>
-                      )}
                       
                       <DropdownMenuItem 
                         onClick={() => navigate("/profile")}
