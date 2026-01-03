@@ -13,6 +13,7 @@ import GeneratePath from './pages/GeneratePath.jsx'
 import MyPaths from './pages/MyPaths.jsx'
 import PathModules from './pages/PathModules'
 import AuthLayout from './components/custom/AuthLayout'
+import Plans from './pages/Plans.jsx'
 
 const router = createBrowserRouter([
   {
@@ -42,6 +43,14 @@ const router = createBrowserRouter([
       {
         path: "paths/:pathId",
         element: <AuthLayout><PathModules /></AuthLayout>,
+      },
+      {
+        path: "*",
+        element: <div>404 Not Found</div>,
+      },
+      {
+        path: "plans",
+        element: <AuthLayout><Plans /></AuthLayout>,
       }
     ],
   },

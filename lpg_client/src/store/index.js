@@ -2,7 +2,9 @@ import { configureStore } from "@reduxjs/toolkit";
 import authReducer from "./authSlice";
 import pathReducer from "./pathSlice";
 import uiReducer from "./uiSlice";
-import { persistStore, persistReducer } from "redux-persist";
+import { persistStore,
+         persistReducer,
+        FLUSH, REHYDRATE, PAUSE, PERSIST, PURGE, REGISTER, } from "redux-persist";
 import storage from "redux-persist/lib/storage";
 
 const authPersistConfig = {
@@ -20,7 +22,8 @@ export const store = configureStore({
         auth: persistedAuthReducer,
         path: pathReducer,
         ui: uiReducer,
-    }
+    },
+    middleware: (getDefaultMiddleware) => getDefaultMiddleware({ serializableCheck: { ignoredActions: [FLUSH, REHYDRATE, PAUSE, PERSIST, PURGE, REGISTER], }, }),
 })
 
 export const persistor = persistStore(store);
