@@ -71,6 +71,10 @@ const learningPathSchema = new mongoose.Schema({
     createdAt:{
         type: Date,
         default: Date.now,
+    },
+    isPublic: {
+        type: Boolean,
+        default: false
     }
 },{
     timestamps:true
